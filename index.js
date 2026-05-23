@@ -6,11 +6,13 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 8000;
+
 app.use(cors({
   origin: ['https://assignment-frontend-parvez.vercel.app', 'http://localhost:3000'],
   credentials: true
 }));
 app.use(express.json());
+
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, {
   serverApi: {
@@ -19,16 +21,18 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
 async function connectDB() {
   try {
     if (!client.topology || !client.topology.isConnected()) {
       await client.connect();
     }
   } catch (err) {
-    console.error("MongoDB Connection Error:", err);
+    console.error('MongoDB Connection Error:', err);
     throw err;
   }
 }
+
 app.get('/', (req, res) => {
   res.send('IdeaVault Server is Running Smoothly!');
 });
@@ -53,32 +57,34 @@ function createJwt(payload) {
 
 app.post('/api/jwt', (req, res) => {
   const { email, name } = req.body;
-  if (!email) return res.status(400).send({ message: "email is required" });
+  if (!email) return res.status(400).send({ message: 'email is required' });
 
   const token = createJwt({ email, name });
   res.send({ token });
 });
+
 app.post('/api/ideas', async (req, res) => {
   try {
     await connectDB();
-    const result = await client.db("assignmentNine").collection("dataall").insertOne(req.body);
+    const result = await client.db('assignmentNine').collection('dataall').insertOne(req.body);
     res.status(201).send({ success: true, insertedId: result.insertedId });
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
+
 app.get('/api/ideas', async (req, res) => {
   try {
     await connectDB();
     const { search, category } = req.query;
-    let query = {};
+    const query = {};
     if (search) query.title = { $regex: search, $options: 'i' };
     if (category && category !== 'All') query.category = category;
 
-    const result = await client.db("assignmentNine").collection("dataall").find(query).toArray();
+    const result = await client.db('assignmentNine').collection('dataall').find(query).toArray();
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -86,11 +92,11 @@ app.get('/api/ideas/count', async (req, res) => {
   try {
     await connectDB();
     const { email } = req.query;
-    if (!email) return res.status(400).send({ message: "email query param required" });
-    const count = await client.db("assignmentNine").collection("dataall").countDocuments({ userEmail: email });
+    if (!email) return res.status(400).send({ message: 'email query param required' });
+    const count = await client.db('assignmentNine').collection('dataall').countDocuments({ userEmail: email });
     res.send({ count });
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -99,11 +105,11 @@ app.get('/api/ideas/:id', async (req, res) => {
     await connectDB();
     const { id } = req.params;
     const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
-    const result = await client.db("assignmentNine").collection("dataall").findOne(query);
-    if (!result) return res.status(404).send({ message: "Idea not found" });
+    const result = await client.db('assignmentNine').collection('dataall').findOne(query);
+    if (!result) return res.status(404).send({ message: 'Idea not found' });
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -113,10 +119,10 @@ app.put('/api/ideas/:id', async (req, res) => {
     const { id } = req.params;
     const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
     const { _id, ...update } = req.body;
-    const result = await client.db("assignmentNine").collection("dataall").updateOne(query, { $set: update });
+    const result = await client.db('assignmentNine').collection('dataall').updateOne(query, { $set: update });
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -125,10 +131,10 @@ app.delete('/api/ideas/:id', async (req, res) => {
     await connectDB();
     const { id } = req.params;
     const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
-    const result = await client.db("assignmentNine").collection("dataall").deleteOne(query);
+    const result = await client.db('assignmentNine').collection('dataall').deleteOne(query);
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -136,11 +142,11 @@ app.get('/api/my-ideas', async (req, res) => {
   try {
     await connectDB();
     const { email } = req.query;
-    if (!email) return res.status(400).send({ message: "email query param required" });
-    const result = await client.db("assignmentNine").collection("dataall").find({ userEmail: email }).toArray();
+    if (!email) return res.status(400).send({ message: 'email query param required' });
+    const result = await client.db('assignmentNine').collection('dataall').find({ userEmail: email }).toArray();
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -148,11 +154,11 @@ app.get('/api/my-interactions', async (req, res) => {
   try {
     await connectDB();
     const { email } = req.query;
-    if (!email) return res.status(400).send({ message: "email query param required" });
-    const result = await client.db("assignmentNine").collection("comments").find({ email }).toArray();
+    if (!email) return res.status(400).send({ message: 'email query param required' });
+    const result = await client.db('assignmentNine').collection('comments').find({ email }).toArray();
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -161,10 +167,10 @@ app.delete('/api/comments/:id', async (req, res) => {
     await connectDB();
     const { id } = req.params;
     const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
-    const result = await client.db("assignmentNine").collection("comments").deleteOne(query);
+    const result = await client.db('assignmentNine').collection('comments').deleteOne(query);
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -174,10 +180,10 @@ app.put('/api/comments/:id', async (req, res) => {
     const { id } = req.params;
     const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
     const { commentText } = req.body;
-    const result = await client.db("assignmentNine").collection("comments").updateOne(query, { $set: { commentText } });
+    const result = await client.db('assignmentNine').collection('comments').updateOne(query, { $set: { commentText } });
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -185,11 +191,11 @@ app.get('/api/comments/count', async (req, res) => {
   try {
     await connectDB();
     const { email } = req.query;
-    if (!email) return res.status(400).send({ message: "email query param required" });
-    const count = await client.db("assignmentNine").collection("comments").countDocuments({ email });
+    if (!email) return res.status(400).send({ message: 'email query param required' });
+    const count = await client.db('assignmentNine').collection('comments').countDocuments({ email });
     res.send({ count });
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
@@ -198,68 +204,41 @@ app.get('/api/comments', async (req, res) => {
     await connectDB();
     const { ideaId } = req.query;
     const query = ideaId ? { ideaId } : {};
-    const result = await client.db("assignmentNine").collection("comments").find(query).toArray();
+    const result = await client.db('assignmentNine').collection('comments').find(query).toArray();
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
 app.post('/api/comments', async (req, res) => {
   try {
     await connectDB();
-    const result = await client.db("assignmentNine").collection("comments").insertOne(req.body);
+    const result = await client.db('assignmentNine').collection('comments').insertOne(req.body);
     res.status(201).send({ success: true, insertedId: result.insertedId });
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
 app.get('/api/trending-ideas', async (req, res) => {
   try {
     await connectDB();
-    const result = await client.db("assignmentNine").collection("dataall")
+    const result = await client.db('assignmentNine').collection('dataall')
       .find({})
       .sort({ createdAt: -1, _id: -1 })
       .limit(6)
       .toArray();
     res.send(result);
   } catch (error) {
-    res.status(500).send({ message: "Internal Server Error", error: error.message });
+    res.status(500).send({ message: 'Internal Server Error', error: error.message });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
 
 module.exports = app;
-/ /  
- b a c k e n d  
- u p d a t e  
- 1  
- / /  
- b a c k e n d  
- u p d a t e  
- 2  
- / /  
- b a c k e n d  
- u p d a t e  
- 3  
- / /  
- b a c k e n d  
- u p d a t e  
- 4  
- / /  
- b a c k e n d  
- u p d a t e  
- 5  
- / /  
- b a c k e n d  
- u p d a t e  
- 6  
- / /  
- b a c k e n d  
- u p d a t e  
- 7  
- 
