@@ -11,6 +11,7 @@ app.use(cors({
   origin: [
     'https://assignment-frontend-parvez.vercel.app',
     'https://ideavault-frontend-three.vercel.app',
+    'https://ideavault-frontend-parvezpatwaryys-projects.vercel.app',
     'http://localhost:3000'
   ],
     credentials: true,
