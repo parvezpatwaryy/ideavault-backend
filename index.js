@@ -7,12 +7,12 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 8000;
 
-app.use(
-  cors({
-    origin: [
-      'https://assignment-frontend-parvez.vercel.app',
-      'http://localhost:3000',
-    ],
+app.use(cors({
+  origin: [
+    'https://assignment-frontend-parvez.vercel.app',
+    'https://ideavault-frontend-three.vercel.app',
+    'http://localhost:3000'
+  ],
     credentials: true,
   })
 );
